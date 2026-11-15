@@ -1,0 +1,10 @@
+ARQUIVOS PARA O GITHUB - REDE RAIZES DO NORDESTE
+
+1. Extraia este ZIP.
+2. Copie os dois arquivos da pasta docs para a pasta docs do projeto Java (a que fica junto do pom.xml).
+3. No terminal do VS Code, aberto na pasta do pom.xml, execute:
+   git add docs
+   git commit -m "Adiciona diagramas e colecao Postman"
+   git push origin main
+
+ATENCAO: a colecao e um roteiro de requisicoes, nao evidencia de execucao. Preserve capturas ou resultados reais dos testes para o relatorio. Nao publique senhas nem tokens.
