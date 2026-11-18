@@ -1,26 +1,106 @@
 {
   "info": {
     "_postman_id": "cdd3883d-9a63-46ea-be45-c054942c7bef",
-    "name": "Rede Raízes do Nordeste - API (revisada)",
-    "description": "Coleção de testes acadêmicos da API Rede Raízes do Nordeste. Configure admin_password e os tokens JWT nas variáveis locais do Postman antes de executar. Nenhuma credencial real é distribuída neste arquivo. Os testes dependem de dados de exemplo existentes no banco.",
+    "name": "Rede Raízes do Nordeste - API",
+    "description": "### Welcome to Postman! This is your first collection. \n\nCollections are your starting point for building and testing APIs. You can use this one to:\n\n• Group related requests\n• Test your API in real-world scenarios\n• Document and share your requests\n\nUpdate the name and overview whenever you’re ready to make it yours.\n\n[Learn more about Postman Collections.](https://learning.postman.com/docs/collections/collections-overview/)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "60200739",
     "_collection_link": "https://go.postman.co/collection/60200739-cdd3883d-9a63-46ea-be45-c054942c7bef?source=collection_link"
   },
   "item": [
     {
-      "name": "01 - Login do funcionário",
+      "name": "Get data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "postman-echo.com/get",
+          "host": [
+            "postman-echo",
+            "com"
+          ],
+          "path": [
+            "get"
+          ]
+        },
+        "description": "This is a GET request and it is used to \"get\" data from an endpoint. There is no request body for a GET request, but you can use query parameters to help specify the resource you want data on (e.g., in this request, we have `id=1`).\n\nA successful GET response will have a `200 OK` status, and should include some kind of response body - for example, HTML web content or JSON data."
+      },
+      "response": []
+    },
+    {
+      "name": "Post data",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"Successful POST request\", function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              ""
+            ]
+          }
+        }
+      ],
       "request": {
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"usuario\": \"admin\",\n  \"senha\": \"{{admin_password}}\"\n}",
+          "raw": "{\n\t\"name\": \"Add your name in the body\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "postman-echo.com/post",
+          "host": [
+            "postman-echo",
+            "com"
+          ],
+          "path": [
+            "post"
+          ]
+        },
+        "description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+      },
+      "response": []
+    },
+    {
+      "name": "01 - Login do funcionário",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const resposta = pm.response.json();\r\n\r\nif (pm.response.code === 200 && resposta.token) {\r\n    pm.collectionVariables.set(\"json_web_token_0fr4\", resposta.token);\r\n    console.log(\"Token ADMIN salvo com sucesso!\");\r\n}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"usuario\": \"admin\",\r\n  \"senha\": \"administrador\"\r\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -40,20 +120,47 @@
           ]
         }
       },
-      "response": [],
+      "response": []
+    },
+    {
+      "name": "01.2 - Login gerente Brasília",
       "event": [
         {
           "listen": "test",
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
+              "const resposta = pm.response.json();\r\n\r\nif (pm.response.code === 200 && resposta.token) {\r\n    pm.collectionVariables.set(\"jwt_gerente\", resposta.token);\r\n    console.log(\"Token GERENTE salvo com sucesso!\");\r\n}"
             ]
           }
         }
-      ]
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"usuario\": \"gerente_brasilia\",\r\n  \"senha\": \"GerenteTeste123!\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
     },
     {
       "name": "02 - Relatório geral",
@@ -83,20 +190,37 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ]
-          }
+      "response": []
+    },
+    {
+      "name": "18 - Funcionários - GERENTE",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_1a2r}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:8080/relatorios/geral",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "relatorios",
+            "geral"
+          ]
         }
-      ]
+      },
+      "response": []
     },
     {
       "name": "03 - Relatório sem autenticação",
@@ -116,20 +240,7 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 401\", function () {",
-              "    pm.response.to.have.status(401);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "04 - Consultar cardápio público",
@@ -149,20 +260,7 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "05 - Consultar relatório de estoque",
@@ -192,20 +290,7 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "06 - Relatório de fidelidade",
@@ -213,42 +298,10 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:8080/relatorios/fidelidade",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "relatorios",
-            "fidelidade"
-          ]
-        },
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{json_web_token_0asz}}",
-              "type": "string"
-            }
-          ]
+          "raw": ""
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "07 - Produtos mais vendidos",
@@ -279,20 +332,7 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "08 - Estoque sem autenticação",
@@ -312,20 +352,7 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 401\", function () {",
-              "    pm.response.to.have.status(401);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "09 - Gerente sem permissão para outra unidad",
@@ -361,20 +388,7 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 403\", function () {",
-              "    pm.response.to.have.status(403);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "10 - Administrador acessando outra unidade",
@@ -410,20 +424,7 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "11 - Consultar produto inexistente",
@@ -453,69 +454,29 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 404\", function () {",
-              "    pm.response.to.have.status(404);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "12 - Pedido sem autenticação",
       "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "method": "GET",
+        "header": [],
         "url": {
-          "raw": "http://localhost:8080/pedidos",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "pedidos"
-          ]
-        },
-        "auth": {
-          "type": "noauth"
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\r\n  \"idCliente\": 1,\r\n  \"idUnidade\": 1,\r\n  \"itens\": [\r\n    {\r\n      \"idProduto\": 1,\r\n      \"quantidade\": 1\r\n    }\r\n  ],\r\n  \"combos\": [],\r\n  \"canalPedido\": \"APP\",\r\n  \"entrega\": false,\r\n  \"usarPontos\": false\r\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          "raw": ""
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 401\", function () {",
-              "    pm.response.to.have.status(401);",
-              "});"
-            ]
-          }
+      "response": []
+    },
+    {
+      "name": "14 - Pedido sem canal de venda",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
         }
-      ]
+      },
+      "response": []
     },
     {
       "name": "13 - Cadastrar pedido válido",
@@ -531,12 +492,7 @@
           ]
         },
         "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [],
         "body": {
           "mode": "raw",
           "raw": "{\r\n  \"idCliente\": 1,\r\n  \"idUnidade\": 1,\r\n  \"itens\": [\r\n    {\r\n      \"idProduto\": 1,\r\n      \"quantidade\": 1\r\n    }\r\n  ],\r\n  \"combos\": [],\r\n  \"canalPedido\": \"APP\",\r\n  \"entrega\": false,\r\n  \"usarPontos\": false\r\n}",
@@ -558,132 +514,18 @@
           ]
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 201\", function () {",
-              "    pm.response.to.have.status(201);",
-              "});"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "14 - Pedido sem canal de venda",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "url": {
-          "raw": "http://localhost:8080/pedidos",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "pedidos"
-          ]
-        },
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{json_web_token_156o}}",
-              "type": "string"
-            }
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"idCliente\": 1,\n  \"idUnidade\": 1,\n  \"itens\": [\n    {\n      \"idProduto\": 1,\n      \"quantidade\": 1\n    }\n  ],\n  \"combos\": [],\n  \"entrega\": false,\n  \"usarPontos\": false\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        }
-      },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 400\", function () {",
-              "    pm.response.to.have.status(400);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "15 - Pedido com estoque insuficiente",
       "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "method": "GET",
+        "header": [],
         "url": {
-          "raw": "http://localhost:8080/pedidos",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "pedidos"
-          ]
-        },
-        "auth": {
-          "type": "bearer",
-          "bearer": [
-            {
-              "key": "token",
-              "value": "{{json_web_token_156o}}",
-              "type": "string"
-            }
-          ]
-        },
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"idCliente\": 1,\n  \"idUnidade\": 1,\n  \"itens\": [\n    {\n      \"idProduto\": 1,\n      \"quantidade\": 999999\n    }\n  ],\n  \"combos\": [],\n  \"canalPedido\": \"APP\",\n  \"entrega\": false,\n  \"usarPontos\": false\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          "raw": ""
         }
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 409\", function () {",
-              "    pm.response.to.have.status(409);",
-              "});"
-            ]
-          }
-        }
-      ]
+      "response": []
     },
     {
       "name": "16 — Pagamento aprovado",
@@ -699,12 +541,7 @@
           ]
         },
         "method": "PATCH",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
+        "header": [],
         "body": {
           "mode": "raw",
           "raw": "{\r\n  \"resultado\": \"APROVADO\"\r\n}",
@@ -726,23 +563,71 @@
             "3",
             "pagamento"
           ]
-        },
-        "description": "Atenção: idPedido=3 é dado de exemplo e já pode estar pago. Para repetir este teste, substitua o ID por um pedido em AGUARDANDO_PAGAMENTO."
-      },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test(\"HTTP 200\", function () {",
-              "    pm.response.to.have.status(200);",
-              "});"
-            ]
-          }
         }
-      ]
+      },
+      "response": []
+    },
+    {
+      "name": "17 — Pagamento recusado",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_0fr4}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"resultado\": \"APROVADO\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:8080/pedidos/3/pagamento",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "8080",
+          "path": [
+            "pedidos",
+            "3",
+            "pagamento"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "New Request",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": ""
+        }
+      },
+      "response": []
     }
   ],
   "variable": [
@@ -767,9 +652,8 @@
       "secret": true
     },
     {
-      "key": "admin_password",
-      "value": "",
-      "type": "string"
+      "key": "jwt_gerente",
+      "value": ""
     }
   ]
 }
