@@ -4,6 +4,7 @@ package br.com.raizesdonordeste.service;
 import br.com.raizesdonordeste.dto.*;
 import br.com.raizesdonordeste.model.*;
 import br.com.raizesdonordeste.repository.*;
+import br.com.raizesdonordeste.service.AuditoriaService;
 
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.*;
 public class PedidoService {
 
     private final PedidoRepository pedidoRepository;
+    private final AuditoriaService auditoriaService;
     private final ClienteRepository clienteRepository;
     private final ProdutoRepository produtoRepository;
     private final UnidadeRepository unidadeRepository;
@@ -31,6 +33,7 @@ public class PedidoService {
 
     public PedidoService(
             PedidoRepository pedidoRepository,
+            AuditoriaService auditoriaService,
             ClienteRepository clienteRepository,
             ProdutoRepository produtoRepository,
             UnidadeRepository unidadeRepository,
@@ -44,6 +47,7 @@ public class PedidoService {
             ProdutoComboVendidoRepository produtoComboVendidoRepository) {
 
         this.pedidoRepository = pedidoRepository;
+        this.auditoriaService = auditoriaService;
         this.clienteRepository = clienteRepository;
         this.produtoRepository = produtoRepository;
         this.unidadeRepository = unidadeRepository;
@@ -72,7 +76,7 @@ public class PedidoService {
     public Pedido buscarPorId(Long idPedido) {
         return pedidoRepository.findById(idPedido)
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Pedido não encontrado."));
+                        "Pedido nÃ£o encontrado."));
     }
 
     @Transactional
@@ -80,11 +84,11 @@ public class PedidoService {
 
         Cliente cliente = clienteRepository.findById(dados.idCliente())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Cliente não encontrado."));
+                        "Cliente nÃ£o encontrado."));
 
         Unidade unidade = unidadeRepository.findById(dados.idUnidade())
                 .orElseThrow(() -> new IllegalArgumentException(
-                        "Unidade não encontrada."));
+                        "Unidade nÃ£o encontrada."));
 
         if (!Boolean.TRUE.equals(unidade.getAtiva())) {
             throw new IllegalArgumentException("Unidade inativa.");
@@ -103,7 +107,7 @@ public class PedidoService {
 
         if (dados.usarPontos() && !combos.isEmpty()) {
             throw new IllegalArgumentException(
-                    "Pedidos com combos não permitem resgate de pontos.");
+                    "Pedidos com combos nÃ£o permitem resgate de pontos.");
         }
 
         Pedido pedido = new Pedido();
@@ -128,7 +132,7 @@ public class PedidoService {
                     || item.quantidade() == null
                     || item.quantidade() <= 0) {
                 throw new IllegalArgumentException(
-                        "Produto ou quantidade inválida.");
+                        "Produto ou quantidade invÃ¡lida.");
             }
 
             quantidadesProdutos.merge(
@@ -144,7 +148,7 @@ public class PedidoService {
                     || item.quantidade() == null
                     || item.quantidade() <= 0) {
                 throw new IllegalArgumentException(
-                        "Combo ou quantidade inválida.");
+                        "Combo ou quantidade invÃ¡lida.");
             }
 
             quantidadesCombos.merge(
@@ -160,7 +164,7 @@ public class PedidoService {
 
             Combo combo = comboRepository.findById(idCombo)
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "Combo não encontrado."));
+                            "Combo nÃ£o encontrado."));
 
             if (!Boolean.TRUE.equals(combo.getAtivo())
                     || combo.getDataInicio() == null
@@ -175,7 +179,7 @@ public class PedidoService {
                     || combo.getPrecoPromocional()
                             .compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException(
-                        "Preço do combo inválido.");
+                        "PreÃ§o do combo invÃ¡lido.");
             }
 
             List<ItemCombo> composicao =
@@ -191,7 +195,7 @@ public class PedidoService {
                 if (componente.getQuantidade() == null
                         || componente.getQuantidade() <= 0) {
                     throw new IllegalArgumentException(
-                            "Quantidade inválida na composição do combo.");
+                            "Quantidade invÃ¡lida na composiÃ§Ã£o do combo.");
                 }
 
                 Long idProduto =
@@ -219,12 +223,12 @@ public class PedidoService {
             Produto produto = produtoRepository
                     .findById(entrada.getKey())
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "Produto não encontrado."));
+                            "Produto nÃ£o encontrado."));
 
             if (produto.getPreco() == null
                     || produto.getPreco().compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException(
-                        "Preço do produto inválido.");
+                        "PreÃ§o do produto invÃ¡lido.");
             }
 
             BigDecimal valor = produto.getPreco().multiply(
@@ -241,18 +245,18 @@ public class PedidoService {
             subtotal = subtotal.add(valor);
         }
 
-        // Bloqueia cada registro de estoque durante a transação.
-        // TreeMap mantém a ordem dos produtos, reduzindo deadlocks.
+        // Bloqueia cada registro de estoque durante a transaÃ§Ã£o.
+        // TreeMap mantÃ©m a ordem dos produtos, reduzindo deadlocks.
         for (var entrada : quantidadesEstoque.entrySet()) {
 
             Produto produto = produtoRepository
                     .findById(entrada.getKey())
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "Produto não encontrado."));
+                            "Produto nÃ£o encontrado."));
 
             if (!Boolean.TRUE.equals(produto.getDisponivel())) {
                 throw new IllegalArgumentException(
-                        "Produto indisponível: " + produto.getNome());
+                        "Produto indisponÃ­vel: " + produto.getNome());
             }
 
             Estoque estoque = estoqueRepository
@@ -299,9 +303,10 @@ public class PedidoService {
                 subtotal.subtract(desconto).add(taxaEntrega));
 
         Pedido salvo = pedidoRepository.save(pedido);
+        auditoriaService.registrar("PEDIDO_CRIADO", "PEDIDO", salvo.getIdPedido(), null, "Pedido criado");
         itemPedidoRepository.saveAll(itensPedido);
 
-        // Guarda os combos vendidos e sua composição original
+        // Guarda os combos vendidos e sua composiÃ§Ã£o original
         for (var entrada : quantidadesCombos.entrySet()) {
 
             Combo combo = combosCarregados.get(entrada.getKey());
@@ -347,7 +352,7 @@ public class PedidoService {
         if (!"AGUARDANDO_PAGAMENTO".equals(pedido.getStatus())
                 && !"PAGAMENTO_RECUSADO".equals(pedido.getStatus())) {
             throw new IllegalArgumentException(
-                    "Este pedido não permite pagamento.");
+                    "Este pedido nÃ£o permite pagamento.");
         }
 
         ResultadoPagamento resultado =
@@ -355,7 +360,9 @@ public class PedidoService {
 
         if (resultado == ResultadoPagamento.RECUSADO) {
             pedido.setStatus("PAGAMENTO_RECUSADO");
-            return pedidoRepository.save(pedido);
+            Pedido salvo = pedidoRepository.save(pedido);
+            auditoriaService.registrar("PAGAMENTO_RECUSADO", "PEDIDO", salvo.getIdPedido(), null, "Pagamento recusado pelo gateway simulado");
+            return salvo;
         }
 
         if (Boolean.TRUE.equals(pedido.getUsarPontos())) {
@@ -371,7 +378,9 @@ public class PedidoService {
                 valorProdutos);
 
         pedido.setStatus("PAGO");
-        return pedidoRepository.save(pedido);
+        Pedido salvo = pedidoRepository.save(pedido);
+        auditoriaService.registrar("PAGAMENTO_APROVADO", "PEDIDO", salvo.getIdPedido(), null, "Pagamento aprovado pelo gateway simulado");
+        return salvo;
     }
 
     @Transactional
@@ -382,12 +391,12 @@ public class PedidoService {
         if (!"AGUARDANDO_PAGAMENTO".equals(pedido.getStatus())
                 && !"PAGAMENTO_RECUSADO".equals(pedido.getStatus())) {
             throw new IllegalArgumentException(
-                    "Somente pedidos não pagos podem ser cancelados.");
+                    "Somente pedidos nÃ£o pagos podem ser cancelados.");
         }
 
         if (pedido.getUnidade() == null) {
             throw new IllegalArgumentException(
-                    "Pedido antigo sem unidade. Verificação manual necessária.");
+                    "Pedido antigo sem unidade. VerificaÃ§Ã£o manual necessÃ¡ria.");
         }
 
         Map<Long, Integer> devolucoes = new TreeMap<>();
@@ -424,7 +433,7 @@ public class PedidoService {
                             entrada.getKey(),
                             pedido.getUnidade().getIdUnidade())
                     .orElseThrow(() -> new IllegalArgumentException(
-                            "Estoque não encontrado para devolução."));
+                            "Estoque nÃ£o encontrado para devoluÃ§Ã£o."));
 
             estoque.setQuantidade(
                     Math.addExact(
@@ -435,6 +444,9 @@ public class PedidoService {
         }
 
         pedido.setStatus("CANCELADO");
-        return pedidoRepository.save(pedido);
+        Pedido salvo = pedidoRepository.save(pedido);
+        auditoriaService.registrar("PEDIDO_CANCELADO", "PEDIDO", salvo.getIdPedido(), null, "Pedido cancelado e estoque devolvido");
+        return salvo;
     }
 }
+

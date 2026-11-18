@@ -1,4 +1,3 @@
-
 # Rede Raízes do Nordeste
 
 ## Sobre o projeto
@@ -46,33 +45,81 @@ O projeto foi desenvolvido como atividade acadêmica do curso de Análise e Dese
 
 ## Requisitos para execução
 
+Para executar o projeto, é necessário ter:
+
 - Java JDK 21.
 - MySQL Server.
-- Acesso ao Maven Wrapper incluído no projeto.
+- Maven Wrapper, incluído no projeto.
+- Git, para clonar o repositório.
 
-## Configuração
+## Configuração do ambiente
 
-1. Criar o banco de dados MySQL:
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/adriellysouzax/rede-raizes-do-nordeste.git
+```
+
+Entre na pasta do projeto Java, onde está localizado o arquivo `pom.xml`.
+
+### 2. Banco de dados
+
+Crie o banco de dados MySQL:
 
 ```sql
 CREATE DATABASE IF NOT EXISTS raizes_nordeste;
 ```
 
-2. Configurar a conexão com o banco no arquivo de propriedades da aplicação, sem publicar senhas no repositório.
+A aplicação utiliza o banco `raizes_nordeste` e o usuário `raizes_app`.
 
-3. Configurar a variável de ambiente `JWT_SECRET` com pelo menos 32 bytes.
+O usuário do banco deve possuir permissões de acesso e alteração nesse banco.
 
-4. Executar as migrações Flyway conforme a configuração do projeto.
+### 3. Variáveis de ambiente
+
+Antes de iniciar a aplicação, configure as seguintes variáveis:
+
+- `DB_PASSWORD`: senha do usuário MySQL utilizado pela aplicação.
+- `ADMIN_PASSWORD`: senha inicial do administrador.
+- `JWT_SECRET`: chave secreta utilizada na geração e validação dos tokens JWT, com pelo menos 32 bytes.
+
+No Windows, utilizando PowerShell, configure as variáveis na mesma janela do terminal em que a aplicação será iniciada:
+
+```powershell
+$env:DB_PASSWORD = "SUA_SENHA_DO_MYSQL"
+$env:ADMIN_PASSWORD = "SUA_SENHA_DO_ADMIN"
+```
+
+Para gerar uma chave JWT aleatória:
+
+```powershell
+$bytes = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($bytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+$rng.Dispose()
+```
+
+Substitua os valores de exemplo pelas credenciais definidas no ambiente local.
+
+As variáveis configuradas dessa forma permanecem disponíveis somente na sessão atual do terminal. Caso o terminal seja fechado, será necessário configurá-las novamente.
+
+**Importante:** nunca publique senhas, tokens ou chaves secretas no GitHub.
+
+### 4. Migrações do banco de dados
+
+As migrações do banco de dados são gerenciadas pelo Flyway, conforme a configuração da aplicação.
+
+As migrações são executadas durante a inicialização, de acordo com a configuração do projeto.
 
 ## Executando a aplicação
 
-No Windows, abra um terminal na pasta que contém o arquivo `pom.xml` e execute:
+No Windows, abra o PowerShell na pasta que contém o arquivo `pom.xml` e execute:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-A API estará disponível em:
+Com as configurações e o banco de dados disponíveis, a API será iniciada em:
 
 http://localhost:8080
 
@@ -80,11 +127,8 @@ http://localhost:8080
 
 Com a aplicação em execução, acesse:
 
-http://localhost:8080/swagger-ui/index.html
-
-Especificação OpenAPI:
-
-http://localhost:8080/v3/api-docs
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
+- Especificação OpenAPI: http://localhost:8080/v3/api-docs
 
 Documentação complementar:
 
@@ -118,39 +162,78 @@ As rotas protegidas exigem o cabeçalho:
 - ATENDENTE: operações de atendimento.
 - COZINHA: operações de preparo.
 
-As permissões específicas são definidas nos endpoints.
+As permissões específicas são definidas nos endpoints e nas regras de segurança da aplicação.
 
 ## Relatórios
+
+Principais endpoints de relatórios:
 
 - `GET /relatorios/geral`
 - `GET /relatorios/estoque`
 - `GET /relatorios/fidelidade`
 - `GET /relatorios/produtos/mais-vendidos`
 
-Os relatórios exigem perfil ADMIN ou GERENTE.
+O acesso depende das permissões configuradas para cada endpoint.
 
 ## Testes
 
-Para executar os testes automatizados:
+### Testes automatizados
+
+Os testes automatizados são executados com o Maven Wrapper:
 
 ```powershell
 .\mvnw.cmd clean test
 ```
 
-Também foram realizados testes manuais de autenticação, autorização e consulta aos relatórios.
+Na última execução realizada, foram obtidos os seguintes resultados:
 
-## Segurança
+- 10 testes executados.
+- 0 falhas.
+- 0 erros.
+- 0 testes ignorados.
+- Resultado: BUILD SUCCESS.
 
-O projeto utiliza Spring Security, autenticação JWT e controle de permissões por perfil.
+### Testes manuais
 
-As credenciais e chaves secretas não devem ser publicadas no repositório.
+Foram realizados testes utilizando a coleção Postman, contemplando:
 
-## Materiais complementares
+- Autenticação de ADMIN e GERENTE.
+- Controle de acesso por perfil e unidade.
+- Acesso a rotas públicas e protegidas.
+- Consulta de relatórios.
+- Cadastro e validação de pedidos.
+- Simulação de pagamentos aprovados e recusados.
+- Validação de estoque insuficiente.
+- Verificação de recursos inexistentes.
+- Validação de campos obrigatórios.
 
-A entrega acadêmica deverá incluir:
+A coleção utilizada está disponível em:
 
-- Diagramas do sistema.
-- Documentação da API.
-- Coleção de testes Postman/Insomnia.
-- Evidências dos testes realizados.
-- Repositório público do projeto.
+`docs/Rede_Raizes_Postman_SS.json`
+
+## Documentação complementar
+
+- `docs/API.md`: documentação dos endpoints.
+- `docs/LGPD.md`: documentação sobre proteção de dados pessoais e auditoria.
+- `docs/UNINTER.drawio`: diagramas do projeto.
+- `docs/Rede_Raizes_Postman_SS.json`: coleção de testes da API.
+
+## Segurança e proteção de dados
+
+A aplicação utiliza autenticação JWT, controle de acesso por perfil e registro de eventos de auditoria.
+
+As senhas são armazenadas por meio de hash, e as credenciais e chaves secretas são fornecidas por variáveis de ambiente.
+
+O consentimento para participação no programa de fidelidade é registrado separadamente, com data e versão do consentimento.
+
+## Repositório
+
+Código-fonte disponível em:
+
+https://github.com/adriellysouzax/rede-raizes-do-nordeste
+
+## Considerações finais
+
+O projeto Rede Raízes do Nordeste apresenta uma API REST desenvolvida com Java e Spring Boot, organizada em camadas e integrada ao MySQL.
+
+A solução contempla autenticação, autorização, gerenciamento de unidades, produtos, estoque, pedidos, pagamentos simulados, fidelidade e relatórios gerenciais.

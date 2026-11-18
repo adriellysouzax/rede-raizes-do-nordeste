@@ -42,4 +42,8 @@ application-local.properties
 
 # Arquivos temporários
 *.log
-*.zip
+*.zip   
+
+# Configurações e credenciais locais
+application.properties.local
+secrets.propertiesj

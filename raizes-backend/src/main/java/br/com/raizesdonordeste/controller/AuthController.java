@@ -15,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import br.com.raizesdonordeste.model.Funcionario;
 import br.com.raizesdonordeste.repository.FuncionarioRepository;
+import br.com.raizesdonordeste.service.AuditoriaService;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -27,15 +28,18 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtEncoder jwtEncoder;
     private final FuncionarioRepository funcionarioRepository;
+    private final AuditoriaService auditoriaService;
 
     public AuthController(
             AuthenticationManager authenticationManager,
             JwtEncoder jwtEncoder,
-            FuncionarioRepository funcionarioRepository) {
+            FuncionarioRepository funcionarioRepository,
+            AuditoriaService auditoriaService) {
 
         this.authenticationManager = authenticationManager;
         this.jwtEncoder = jwtEncoder;
         this.funcionarioRepository = funcionarioRepository;
+        this.auditoriaService = auditoriaService;
     }
 
     @PostMapping("/login")
@@ -51,7 +55,7 @@ public class AuthController {
                     .findByUsuario(autenticacao.getName())
                     .orElseThrow(() -> new ResponseStatusException(
                             HttpStatus.UNAUTHORIZED,
-                            "Usuário não encontrado."));
+                            "UsuÃ¡rio nÃ£o encontrado."));
 
             Instant agora = Instant.now();
 
@@ -75,12 +79,13 @@ public class AuthController {
             String token = jwtEncoder.encode(
                     JwtEncoderParameters.from(cabecalho, claims)).getTokenValue();
 
+            auditoriaService.registrar("LOGIN_SUCESSO", "FUNCIONARIO", funcionario.getIdFuncionario(), funcionario.getUsuario(), "AutenticaÃ§Ã£o realizada com sucesso");
             return new TokenResponse(token, "Bearer", 3600);
 
         } catch (AuthenticationException e) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Usuário ou senha inválidos.");
+                    "UsuÃ¡rio ou senha invÃ¡lidos.");
         }
     }
 
@@ -95,3 +100,4 @@ public class AuthController {
             long expiraEmSegundos) {
     }
 }
+

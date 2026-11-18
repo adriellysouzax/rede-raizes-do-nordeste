@@ -21,6 +21,8 @@ public class Cliente {
     private String senhaHash;
 
     private Boolean aceitaFidelidade;
+    private java.time.LocalDateTime dataConsentimentoFidelidade;
+    private String versaoConsentimentoFidelidade;
 
     public Cliente() {
     }
@@ -73,6 +75,11 @@ public class Cliente {
         this.senhaHash = senhaHash;
     }
 
+    public java.time.LocalDateTime getDataConsentimentoFidelidade() { return dataConsentimentoFidelidade; }
+    public void setDataConsentimentoFidelidade(java.time.LocalDateTime data) { this.dataConsentimentoFidelidade = data; }
+    public String getVersaoConsentimentoFidelidade() { return versaoConsentimentoFidelidade; }
+    public void setVersaoConsentimentoFidelidade(String versao) { this.versaoConsentimentoFidelidade = versao; }
+
     public Boolean getAceitaFidelidade() {
         return aceitaFidelidade;
     }
@@ -81,3 +88,4 @@ public class Cliente {
         this.aceitaFidelidade = aceitaFidelidade;
     }
 }
+
