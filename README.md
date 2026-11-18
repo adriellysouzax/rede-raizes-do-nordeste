@@ -45,13 +45,24 @@ O projeto foi desenvolvido como atividade acadêmica do curso de Análise e Dese
 
 ## Requisitos para execução
 
+Para executar o projeto, é necessário ter:
+
 - Java JDK 21.
 - MySQL Server.
-- Maven Wrapper incluído no projeto.
+- Maven Wrapper, incluído no projeto.
+- Git, para clonar o repositório.
 
 ## Configuração do ambiente
 
-### 1. Banco de dados
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/adriellysouzax/rede-raizes-do-nordeste.git
+```
+
+Entre na pasta do projeto Java, onde está localizado o arquivo `pom.xml`.
+
+### 2. Banco de dados
 
 Crie o banco de dados MySQL:
 
@@ -61,25 +72,48 @@ CREATE DATABASE IF NOT EXISTS raizes_nordeste;
 
 A aplicação utiliza o banco `raizes_nordeste` e o usuário `raizes_app`.
 
-Configure o acesso ao banco e a senha correspondente por meio das variáveis de ambiente, sem publicar credenciais no repositório.
+O usuário do banco deve possuir permissões de acesso e alteração nesse banco.
 
-### 2. Variáveis de ambiente
+### 3. Variáveis de ambiente
 
-Configure as seguintes variáveis antes de iniciar a aplicação:
+Antes de iniciar a aplicação, configure as seguintes variáveis:
 
 - `DB_PASSWORD`: senha do usuário MySQL utilizado pela aplicação.
 - `ADMIN_PASSWORD`: senha inicial do administrador.
 - `JWT_SECRET`: chave secreta utilizada na geração e validação dos tokens JWT, com pelo menos 32 bytes.
 
-Não compartilhe essas credenciais nem as publique no GitHub.
+No Windows, utilizando PowerShell, configure as variáveis na mesma janela do terminal em que a aplicação será iniciada:
 
-### 3. Migrações
+```powershell
+$env:DB_PASSWORD = "SUA_SENHA_DO_MYSQL"
+$env:ADMIN_PASSWORD = "SUA_SENHA_DO_ADMIN"
+```
+
+Para gerar uma chave JWT aleatória:
+
+```powershell
+$bytes = New-Object byte[] 32
+$rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+$rng.GetBytes($bytes)
+$env:JWT_SECRET = [Convert]::ToBase64String($bytes)
+$rng.Dispose()
+```
+
+Substitua os valores de exemplo pelas credenciais definidas no ambiente local.
+
+As variáveis configuradas dessa forma permanecem disponíveis somente na sessão atual do terminal. Caso o terminal seja fechado, será necessário configurá-las novamente.
+
+**Importante:** nunca publique senhas, tokens ou chaves secretas no GitHub.
+
+### 4. Migrações do banco de dados
 
 As migrações do banco de dados são gerenciadas pelo Flyway, conforme a configuração da aplicação.
 
+As migrações são executadas durante a inicialização, de acordo com a configuração do projeto.
+
 ## Executando a aplicação
 
-No Windows, abra o terminal na pasta que contém o arquivo `pom.xml` e execute:
+No Windows, abra o PowerShell na pasta que contém o arquivo `pom.xml` e execute:
 
 ```powershell
 .\mvnw.cmd spring-boot:run
@@ -150,39 +184,4 @@ Foram realizados testes manuais utilizando o Postman, contemplando:
 - Acesso a rotas públicas e protegidas.
 - Consulta de relatórios.
 - Cadastro de pedidos.
-- Validação de campos obrigatórios.
-- Validação de estoque insuficiente.
-- Simulação de pagamento aprovado e recusado.
-
-A coleção utilizada nos testes está disponível em:
-
-`docs/Rede_Raizes_Postman_SS.json`
-
-Para executar os testes automatizados do projeto, utilize:
-
-```powershell
-.\mvnw.cmd clean test
-```
-
-O resultado dos testes automatizados deve ser conferido no terminal após a execução.
-
-## Segurança
-
-O projeto utiliza Spring Security, autenticação JWT e controle de permissões por perfil.
-
-As senhas e chaves secretas devem ser mantidas em variáveis de ambiente e nunca publicadas no repositório.
-
-## Materiais complementares
-
-A documentação do projeto está organizada na pasta `docs`:
-
-- `API.md`: documentação dos endpoints.
-- `LEIA-ME.txt`: orientações complementares.
-- `Rede_Raizes_Postman_SS.json`: coleção de requisições e testes do Postman.
-- `UNINTER.drawio`: diagrama do projeto.
-
-## Repositório
-
-Código-fonte disponível em:
-
-https://github.com/adriellysouzax/rede-raizes-do-nordeste
+- Validação de campos obrigatórios

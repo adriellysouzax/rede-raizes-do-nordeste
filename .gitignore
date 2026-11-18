@@ -46,4 +46,4 @@ application-local.properties
 
 # Configurações e credenciais locais
 application.properties.local
-secrets.properties
+secrets.propertiesj
